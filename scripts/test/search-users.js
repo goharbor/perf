@@ -1,11 +1,13 @@
 // test the performance for the search users API
-
+import { Rate } from 'k6/metrics'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { fetchUsers, randomItem } from '../helpers.js'
 
 const settings = Settings()
+
+export let successRate = new Rate('success')
 
 export let options = {
     setupTimeout: '24h',
@@ -36,7 +38,9 @@ export default function ({ usernames }) {
 
     try {
         harbor.searchUsers({ username })
+        successRate.add(true)
     } catch (e) {
+        successRate.add(false)
         console.log(e)
     }
 }

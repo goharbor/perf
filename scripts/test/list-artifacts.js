@@ -1,11 +1,13 @@
 // test the performance for the list artifacts API
-
+import { Rate } from 'k6/metrics'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { fetchProjects, fetchRepositories, randomItem } from '../helpers.js'
 
 const settings = Settings()
+
+export let successRate = new Rate('success')
 
 export let options = {
     setupTimeout: '24h',
@@ -60,7 +62,9 @@ export default function ({ inputs }) {
 
     try {
         harbor.listArtifacts(input.projectName, repositoryName, params)
+        successRate.add(true)
     } catch (e) {
+        successRate.add(false)
         console.log(e)
     }
 }

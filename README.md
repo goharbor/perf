@@ -56,6 +56,6 @@ The following table includes the targets.
 | Target  | Description                                    | Example                                                                                  |
 | ------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | prepare | Generate user data                             | HARBOR_SIZE=small HARBOR_URL=https://admin:password@harbor.domain go run mage.go prepare |
-| run     | Execute a specific test                        | HARBOR_URL=https://admin:password@harbor.domain go run mage.go list-projects             |
+| run     | Execute a specific test                        | HARBOR_URL=https://admin:password@harbor.domain go run mage.go run list-projects         |
 | all     | Execute all tasks                              | HARBOR_URL=https://admin:password@harbor.domain go run mage.go all                       |
 | list    | Print all test                                 | go run mage.go list                                                                      |
