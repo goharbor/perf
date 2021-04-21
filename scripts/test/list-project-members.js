@@ -1,11 +1,13 @@
 // test the performance for the list project members API
-
+import { Rate } from 'k6/metrics'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { fetchProjects, randomItem } from '../helpers.js'
 
 const settings = Settings()
+
+export let successRate = new Rate('success')
 
 export let options = {
     setupTimeout: '24h',
@@ -36,7 +38,9 @@ export default function ({ projectNames }) {
 
     try {
         harbor.listProjectMembers(projectName)
+        successRate.add(true)
     } catch (e) {
+        successRate.add(false)
         console.log(e)
     }
 }
