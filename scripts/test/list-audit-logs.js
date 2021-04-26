@@ -9,9 +9,8 @@ const settings = Settings()
 export let successRate = new Rate('success')
 
 export let options = {
-    setupTimeout: '24h',
-    teardownTimeout: '1h',
-    noUsageReport: true,
+    setupTimeout: '6h',
+    duration: '24h',
     vus: 500,
     iterations: 1000,
     thresholds: {

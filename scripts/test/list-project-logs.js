@@ -1,17 +1,28 @@
 // test the performance for the list project logs API
+import { SharedArray } from 'k6/data'
 import { Rate } from 'k6/metrics'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { fetchProjects, randomItem } from '../helpers.js'
+import { getProjectName, randomItem } from '../helpers.js'
 
 const settings = Settings()
+
+const projectNames = new SharedArray('projectNames', function () {
+    const results = []
+
+    for (let i = 0; i < settings.ProjectsCount; i++) {
+        results.push(getProjectName(settings, i))
+    }
+
+    return results
+});
 
 export let successRate = new Rate('success')
 
 export let options = {
-    setupTimeout: '24h',
-    teardownTimeout: '1h',
+    setupTimeout: '6h',
+    duration: '24h',
     noUsageReport: true,
     vus: 500,
     iterations: 1000,
@@ -25,19 +36,11 @@ export let options = {
 
 export function setup() {
     harbor.initialize(settings.Harbor)
-
-    const projects = fetchProjects(settings.ProjectsCount)
-
-    return {
-        projectNames: projects.map(p => p.name),
-    }
 }
 
-export default function ({ projectNames }) {
-    const projectName = randomItem(projectNames)
-
+export default function () {
     try {
-        harbor.listAuditLogsOfProject(projectName)
+        harbor.listAuditLogsOfProject(randomItem(projectNames))
         successRate.add(true)
     } catch (e) {
         successRate.add(false)

@@ -1,18 +1,36 @@
 // test the performance for the list artifact tags API
+import { SharedArray } from 'k6/data'
 import { Rate } from 'k6/metrics'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { fetchProjects, fetchRepositories, fetchAritfacts , randomItem } from '../helpers.js'
+import { getProjectName, getRepositoryName, getArtifactTag , randomItem } from '../helpers.js'
 
 const settings = Settings()
+
+const artifacts = new SharedArray('artifacts', function () {
+    const results = []
+
+    for (let i = 0; i < settings.ProjectsCount; i++) {
+        for (let j = 0; j < settings.RepositoriesCountPerProject; j++) {
+            for (let k = 0; k < settings.ArtifactsCountPerRepository; k++) {
+                results.push({
+                    projectName: getProjectName(settings, i),
+                    repositoryName: getRepositoryName(settings, j),
+                    reference: getArtifactTag(settings, k),
+                })
+            }
+        }
+    }
+
+    return results
+});
 
 export let successRate = new Rate('success')
 
 export let options = {
-    setupTimeout: '24h',
-    teardownTimeout: '1h',
-    noUsageReport: true,
+    setupTimeout: '6h',
+    duration: '24h',
     vus: 500,
     iterations: 1000,
     thresholds: {
@@ -25,42 +43,10 @@ export let options = {
 
 export function setup() {
     harbor.initialize(settings.Harbor)
-
-    const projects = fetchProjects(settings.ProjectsCount)
-
-    const inputs = []
-    for (const project of projects) {
-        const projectName = project.name
-
-        try {
-            const repositories = fetchRepositories(projectName)
-
-            for (const repository of repositories) {
-                const repositoryName = repository.name.replace(`${projectName}/`, '')
-
-                const artifacts = fetchAritfacts(projectName, repositoryName)
-
-                inputs.push({
-                    projectName,
-                    repositoryName,
-                    artifactDigests: artifacts.map(a => a.digest),
-                })
-            }
-
-        } catch (e) {
-            console.log(e)
-        }
-    }
-
-    return {
-        inputs
-    }
 }
 
-export default function ({ inputs }) {
-    const input = randomItem(inputs)
-
-    const digest = randomItem(input.artifactDigests)
+export default function () {
+    const a = randomItem(artifacts)
 
     const params = {
         withSignature: true,
@@ -68,7 +54,7 @@ export default function ({ inputs }) {
     }
 
     try {
-        harbor.listArtifactTags(input.projectName, input.repositoryName, digest, params)
+        harbor.listArtifactTags(a.projectName, a.repositoryName, a.reference, params)
         successRate.add(true)
     } catch (e) {
         successRate.add(false)

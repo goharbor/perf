@@ -1,18 +1,33 @@
 // test the performance for the list artifacts API
+import { SharedArray } from 'k6/data'
 import { Rate } from 'k6/metrics'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { fetchProjects, fetchRepositories, randomItem } from '../helpers.js'
+import { getProjectName, getRepositoryName, randomItem } from '../helpers.js'
 
 const settings = Settings()
+
+const repositories = new SharedArray('repositories', function () {
+    const results = []
+
+    for (let i = 0; i < settings.ProjectsCount; i++) {
+        for (let j = 0; j < settings.RepositoriesCountPerProject; j++) {
+            results.push({
+                projectName: getProjectName(settings, i),
+                repositoryName: getRepositoryName(settings, j),
+            })
+        }
+    }
+
+    return results
+});
 
 export let successRate = new Rate('success')
 
 export let options = {
-    setupTimeout: '24h',
-    teardownTimeout: '1h',
-    noUsageReport: true,
+    setupTimeout: '6h',
+    duration: '24h',
     vus: 500,
     iterations: 1000,
     thresholds: {
@@ -25,33 +40,10 @@ export let options = {
 
 export function setup() {
     harbor.initialize(settings.Harbor)
-
-    const projects = fetchProjects(settings.ProjectsCount)
-
-    const inputs = []
-    for (const project of projects) {
-        const projectName = project.name
-
-        try {
-            const repositories = fetchRepositories(projectName)
-
-            inputs.push({
-                projectName,
-                repositoryNames: repositories.map(r => r.name.replace(`${projectName}/`, ''))
-            })
-        } catch (e) {
-        }
-    }
-
-    return {
-        inputs
-    }
 }
 
-export default function ({ inputs }) {
-    const input = randomItem(inputs)
-
-    const repositoryName = randomItem(input.repositoryNames)
+export default function () {
+    const r = randomItem(repositories)
 
     const params = {
         withImmutableStatus: true,
@@ -61,7 +53,7 @@ export default function ({ inputs }) {
     }
 
     try {
-        harbor.listArtifacts(input.projectName, repositoryName, params)
+        harbor.listArtifacts(r.projectName, r.repositoryName, params)
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
