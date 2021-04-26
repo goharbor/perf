@@ -1,11 +1,12 @@
 // prepare artifacts
-
+import { SharedArray } from 'k6/data'
+import { Rate } from 'k6/metrics'
 import counter from 'k6/x/counter'
 import harbor from 'k6/x/harbor'
 import { ContentStore } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { fetchProjects } from '../helpers.js'
+import { getProjectName, getRepositoryName, getArtifactTag } from '../helpers.js'
 
 const settings = Settings()
 
@@ -13,12 +14,19 @@ const totalIterations = settings.ProjectsCount * settings.RepositoriesCountPerPr
 
 const store = new ContentStore('data')
 
+let allBlobs = new SharedArray('allBlobs', function () {
+    return store.generateMany(settings.BlobSize, totalIterations * settings.BlobsCountPerArtifact)
+});
+
+export let successRate = new Rate('success')
+
 export let options = {
     setupTimeout: '6h',
     duration: '24h',
-    vus:  Math.min(300, settings.ProjectsCount),
+    vus:  Math.min(settings.VUS, totalIterations),
     iterations: totalIterations,
     thresholds: {
+        'success': ['rate>=1'],
         'iteration_duration{scenario:default}': [
             `max>=0`,
         ],
@@ -29,47 +37,52 @@ export let options = {
 export function setup() {
     harbor.initialize(settings.Harbor)
 
-    const projects = fetchProjects(settings.ProjectsCount)
+    const arr = []
+    for (let i = 0; i < settings.ProjectsCount; i++) {
+        const projectName = getProjectName(settings, i)
 
-    const params = []
-    for (const project of projects) {
-        for (let i = 0; i < settings.RepositoriesCountPerProject; i++) {
-            const s1 = `${i + 1}`.padStart(settings.RepositoriesCountPerProject.toString().length, '0')
-            for (let j = 0; j < settings.ArtifactsCountPerRepository; j++) {
-                const s2 = `${j + 1}`.padStart(settings.ArtifactsCountPerRepository.toString().length, '0')
-                params.push({
-                    projectName: project.name,
-                    repositoryName: `repository-${s1}`,
-                    tagName: `v${s2}`
-                })
+        const refs = []
+
+        for (let j = 0; j < settings.RepositoriesCountPerProject; j++) {
+            const repositoryName = getRepositoryName(settings, j)
+
+            for (let k = 0; k < settings.ArtifactsCountPerRepository; k++) {
+                refs.push(`${projectName}/${repositoryName}:${getArtifactTag(settings, k)}`)
             }
+        }
+
+        arr.push(refs)
+    }
+
+    const artifactsPerProject = settings.RepositoriesCountPerProject * settings.ArtifactsCountPerRepository
+
+    const refs = []
+    for (let i = 0; i < artifactsPerProject; i++) {
+        for (let j = 0; j < arr.length; j++) {
+            refs.push(arr[j][i])
         }
     }
 
     return {
-        params,
+        refs,
     }
 }
 
-export default function ({ params }) {
+export default function ({ refs }) {
     const i = counter.up() - 1
 
-    const param = params[i]
+    const ref = refs[i]
 
-    const ref = `${param.projectName}/${param.repositoryName}:${param.tagName}`
-
-    const blobs = store.generateMany(settings.BlobSize, settings.BlobsCountPerArtifact)
+    const blobs = []
+    for (let j = 0; j < settings.BlobsCountPerArtifact; j++) {
+        blobs.push(allBlobs[i * settings.BlobsCountPerArtifact + j])
+    }
 
     try {
         harbor.push({ ref, store, blobs })
-
-        for (let i = 0; i < settings.ArtifactTagsCountPerArtifact-1; i++) {
-            const s = `${i+1}`.padStart(settings.ArtifactTagsCountPerArtifact.toString().length, '0')
-
-            harbor.createArtifactTag(param.projectName, param.repositoryName, param.tagName, `${param.tagName}-${s}`)
-        }
-
+        successRate.add(true)
     } catch (e) {
+        successRate.add(false)
         console.log(e)
     }
 }

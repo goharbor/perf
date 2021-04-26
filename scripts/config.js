@@ -10,6 +10,8 @@ export function Settings() {
         }
     }
 
+    settings['ProjectPrefix'] = getEnv('PROJECT_PREFIX', 'project')
+
     return settings
 }
 
@@ -43,6 +45,7 @@ function getUserDataSettings() {
 
     return {
         ci: {
+            VUS: getEnvInt('HARBOR_VUS', '100'),
             ProjectsCount: 10,
             RepositoriesCountPerProject: 10,
             ArtifactsCountPerRepository: 5,
@@ -54,15 +57,16 @@ function getUserDataSettings() {
             BlobsCountPerArtifact: 1
         },
         small: {
+            VUS: getEnvInt('HARBOR_VUS', '300'),
             ProjectsCount: 100,
             RepositoriesCountPerProject: 100,
             ArtifactsCountPerRepository: 10,
-            ArtifactTagsCountPerArtifact: 10,
+            ArtifactTagsCountPerArtifact: 5,
             UsersCount: 100,
             ProjectMembersCountPerProject: 10,
             AuditLogsCount: 100000,
             BlobSize: getEnv('BLOB_SIZE', '1 KiB'),
-            BlobsCountPerArtifact: getEnv('BLOBS_COUNT_PER_ARTIFACT', 3)
+            BlobsCountPerArtifact: getEnv('BLOBS_COUNT_PER_ARTIFACT', 1)
         }
     }[userDataSize]
 }

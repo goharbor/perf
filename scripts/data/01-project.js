@@ -1,18 +1,24 @@
 // prepare projects
-
+import { Rate } from 'k6/metrics'
 import counter from 'k6/x/counter'
 import harbor from 'k6/x/harbor'
 
-import { Settings } from '../config.js'
+import { Settings, getEnv } from '../config.js'
+import { numberToPadString } from '../helpers.js'
 
 const settings = Settings()
+
+const totalIterations = settings.ProjectsCount
+
+export let successRate = new Rate('success')
 
 export let options = {
     setupTimeout: '6h',
     duration: '24h',
-    vus: Math.min(300, settings.ProjectsCount),
-    iterations: settings.ProjectsCount,
+    vus:  Math.min(settings.VUS, totalIterations),
+    iterations: totalIterations,
     thresholds: {
+        'success': ['rate>=1'],
         'iteration_duration{scenario:default}': [
             `max>=0`,
         ],
@@ -28,18 +34,16 @@ export function setup() {
     } catch (e) {
         console.log(e)
     }
-
-    return {
-        projectPrefix: `project-${Date.now()}`
-    }
 }
 
-export default function ({ projectPrefix }) {
-    const suffix = `${counter.up()}`.padStart(settings.ProjectsCount.toString().length, '0')
+export default function () {
+    const suffix = numberToPadString(counter.up(), settings.ProjectsCount)
 
     try {
-        harbor.createProject({ projectName: `${projectPrefix}-${suffix}` })
+        harbor.createProject({ projectName: `${settings.ProjectPrefix}-${suffix}` })
+        successRate.add(true)
     } catch (e) {
+        successRate.add(false)
         console.log(e)
     }
 }

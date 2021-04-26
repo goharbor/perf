@@ -1,5 +1,5 @@
 // prepare project members
-
+import { Rate } from 'k6/metrics'
 import counter from 'k6/x/counter'
 import harbor from 'k6/x/harbor'
 
@@ -8,12 +8,17 @@ import { fetchProjects, fetchUsers } from '../helpers.js'
 
 const settings = Settings()
 
+const totalIterations = settings.ProjectsCount * settings.ProjectMembersCountPerProject
+
+export let successRate = new Rate('success')
+
 export let options = {
     setupTimeout: '6h',
     duration: '24h',
-    vus:  Math.min(300, settings.ProjectsCount * settings.ProjectMembersCountPerProject),
-    iterations: settings.ProjectsCount * settings.ProjectMembersCountPerProject,
+    vus:  Math.min(settings.VUS, totalIterations),
+    iterations: totalIterations,
     thresholds: {
+        'success': ['rate>=1'],
         'iteration_duration{scenario:default}': [
             `max>=0`,
         ],
@@ -44,7 +49,9 @@ export default function ({ projectNames, userIDs }) {
 
     try {
         harbor.createProjectMember(projectName, userID)
+        successRate.add(true)
     } catch (e) {
+        successRate.add(false)
         console.log(e)
     }
 }
