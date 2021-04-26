@@ -131,3 +131,23 @@ export function randomIntBetween(min, max) { // min and max included
 export function randomItem(items) {
     return items[Math.floor(Math.random() * items.length)];
 }
+
+export function numberToPadString(num, maxNum, padString='0') {
+    return `${num}`.padStart(maxNum.toString().length, padString)
+}
+
+export function getProjectName(settings, i) {
+    return `${settings.ProjectPrefix}-${numberToPadString(i + 1, settings.ProjectsCount)}`
+}
+
+export function getRepositoryName(settings, i) {
+    return `repository-${numberToPadString(i + 1, settings.RepositoriesCountPerProject)}`
+}
+
+export function getArtifactTag(settings, i) {
+    return `v${numberToPadString(i + 1, settings.ArtifactsCountPerRepository)}`
+}
+
+export function getArtifactNewTag(settings, tagIndex, newTagIndex) {
+    return `${getArtifactTag(settings, tagIndex)}p${numberToPadString(newTagIndex+1, settings.ArtifactTagsCountPerArtifact)}`
+}

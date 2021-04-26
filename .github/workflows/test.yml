@@ -56,12 +56,13 @@ jobs:
         sudo -- sh -c "echo '127.0.0.1 core.harbor.domain' >> /etc/hosts"
         git clone https://github.com/goharbor/harbor-helm
         cd harbor-helm
-        helm install harbor . --set harborAdminPassword=Harbor1234567890
+        helm install harbor . --set harborAdminPassword=Harbor1234567890 --set logLevel=debug
         time kubectl wait --for=condition=ready pod --all --timeout=600s
 
     - name: Prepare data
       env:
         K6_QUIET: yes
+        HARBOR_VUS: 20
         HARBOR_SIZE: ci
         HARBOR_URL: https://admin:Harbor1234567890@core.harbor.domain
       run: go run mage.go prepare
@@ -73,3 +74,17 @@ jobs:
         HARBOR_ITERATIONS: 10
         HARBOR_URL: https://admin:Harbor1234567890@core.harbor.domain
       run: go run mage.go
+
+    - name: Fetch harbor logs
+      if: ${{ failure() }}
+      run: |
+        mkdir -p /tmp/harbor
+        for name in chartmuseum core database jobservice notary-server notary-signer portal redis registry trivy; do \
+          kubectl logs -l "component=$name" --all-containers=true > /tmp/harbor/$name.log ; \
+        done
+
+    - uses: actions/upload-artifact@v2
+      if: ${{ failure() }}
+      with:
+        name: harbor
+        path: /tmp/harbor
