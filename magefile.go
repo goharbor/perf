@@ -245,6 +245,10 @@ func addVusAndIterationsArgs(args []string) []string {
 	iterations, err := getEnvInt64(HarborIterationsEnvKey)
 	mgx.Must(err)
 
+	if vus > 0 && iterations == 0 {
+		iterations = vus * 2
+	}
+
 	if vus > iterations {
 		mgx.Must(fmt.Errorf("the value of the %s must be less or equal with the value of %s", HarborVusEnvKey, HarborIterationsEnvKey))
 	}
