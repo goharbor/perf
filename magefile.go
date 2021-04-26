@@ -27,6 +27,9 @@ const (
 
 	K6QuietEnvKey        = "K6_QUIET"
 	K6AlwaysUpdateEnvKey = "K6_ALWAYS_UPDATE"
+
+	K6CsvOutputEnvKey  = "K6_CSV_OUTPUT"
+	K6JsonOutputEnvKey = "K6_JSON_OUTPUT"
 )
 
 // Default target to run when none is specified
@@ -43,9 +46,13 @@ func EnsureK6() error {
 	return ensureK6(getEnvBool(K6AlwaysUpdateEnvKey))
 }
 
+func mkOutputDir() error {
+	return os.MkdirAll("./outputs", 0755)
+}
+
 // Generate user data
 func Prepare() error {
-	mg.Deps(EnsureK6)
+	mg.Deps(EnsureK6, mkOutputDir)
 
 	env := addHarborSizeToEnv(addHarborEnv(nil))
 
@@ -67,7 +74,7 @@ func Prepare() error {
 
 // Execute a specific test
 func Run(test string) error {
-	mg.Deps(EnsureK6)
+	mg.Deps(EnsureK6, mkOutputDir)
 
 	scripts, err := filepath.Glob(fmt.Sprintf("./scripts/test/%s.js", test))
 	mgx.Must(err)
@@ -89,7 +96,7 @@ func Run(test string) error {
 
 // Execute all tests
 func All() error {
-	mg.Deps(EnsureK6)
+	mg.Deps(EnsureK6, mkOutputDir)
 
 	env := addHarborEnv(nil)
 
@@ -235,6 +242,23 @@ func getK6RunArgs(script string) []string {
 		args = append(args, "--quiet")
 	}
 
+	hasOutputs := false
+	scriptName := getScriptName(script)
+
+	if getEnvBool(K6CsvOutputEnvKey) {
+		hasOutputs = true
+		args = append(args, "--out", fmt.Sprintf("csv=./outputs/%s.csv", scriptName))
+	}
+
+	if getEnvBool(K6JsonOutputEnvKey) {
+		hasOutputs = true
+		args = append(args, "--out", fmt.Sprintf("json=./outputs/%s.json", scriptName))
+	}
+
+	if hasOutputs {
+		args = append(args, "--tag", fmt.Sprintf("script=%s", scriptName))
+	}
+
 	return args
 }
 
@@ -280,4 +304,10 @@ func getEnvInt64(key string) (int64, error) {
 	}
 
 	return strconv.ParseInt(str, 10, 64)
+}
+
+func getScriptName(script string) string {
+	file := filepath.Base(script)
+
+	return strings.TrimSuffix(file, filepath.Ext(file))
 }

@@ -48,7 +48,9 @@ The environment variables in the table are the configurations for the performanc
 | HARBOR_VUS                 | The number of virtual users for the performance test         | 500                                           |
 | HARBOR_ITERATIONS          | The script total iteration limit (among all VUs) for the performance test | 1000                             |
 | K6_ALWAYS_UPDATE           | Always install the latest xk6-harbor                         | false                                         |
-| K6_QUIET                   | Disable progress updates of the xk6-harbor                   | false                                         |
+| K6_QUIET                   | Disable progress updates of the k6                           | false                                         |
+| K6_CSV_OUTPUT              | Make k6 output detailed statistics in a CSV format           | false                                         |
+| K6_JSON_OUTPUT             | Make k6 output detailed statistics in JSON format            | false                                         |
 
 
 The following table includes the targets.
