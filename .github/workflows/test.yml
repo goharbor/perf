@@ -6,85 +6,86 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.15.6
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.6
 
-    - name: Cache go mod
-      uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+      - name: Cache go mod
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-    - name: Prepare memory storage for etcd of kind cluster
-      run: |
-        # Use memory storage for etcd of the kind cluster, see https://github.com/kubernetes-sigs/kind/issues/845 for more info
-        mkdir -p /tmp/lib/etcd
-        sudo mount -t tmpfs tmpfs /tmp/lib/etcd
+      - name: Prepare memory storage for etcd of kind cluster
+        run: |
+          # Use memory storage for etcd of the kind cluster, see https://github.com/kubernetes-sigs/kind/issues/845 for more info
+          mkdir -p /tmp/lib/etcd
+          sudo mount -t tmpfs tmpfs /tmp/lib/etcd
 
-    - name: Install kubernetes
-      uses: helm/kind-action@v1.1.0
-      with:
-        version: v0.9.0
-        node_image: kindest/node:v1.20.2
-        cluster_name: harbor
-        config: .github/kind.yaml
+      - name: Install kubernetes
+        uses: helm/kind-action@v1.1.0
+        with:
+          version: v0.9.0
+          node_image: kindest/node:v1.20.2
+          cluster_name: harbor
+          config: .github/kind.yaml
 
-    - name: Install kubectl
-      uses: azure/setup-kubectl@v1
-      with:
-        version: 'v1.20.2'
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v1
+        with:
+          version: "v1.20.2"
 
-    - name: Install nginx ingress controller
-      run: |
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/ingress-nginx-2.3.0/deploy/static/provider/kind/deploy.yaml
-        kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+      - name: Install nginx ingress controller
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/ingress-nginx-2.3.0/deploy/static/provider/kind/deploy.yaml
+          kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
 
-    - name: Set up helm
-      uses: azure/setup-helm@v1
-      with:
-        version: '3.2.3'
+      - name: Set up helm
+        uses: azure/setup-helm@v1
+        with:
+          version: "3.2.3"
 
-    - name: Install harbor
-      run: |
-        sudo -- sh -c "echo '127.0.0.1 core.harbor.domain' >> /etc/hosts"
-        git clone https://github.com/goharbor/harbor-helm
-        cd harbor-helm
-        helm install harbor . --set harborAdminPassword=Harbor1234567890 --set logLevel=debug
-        time kubectl wait --for=condition=ready pod --all --timeout=600s
+      - name: Install harbor
+        run: |
+          sudo -- sh -c "echo '127.0.0.1 core.harbor.domain' >> /etc/hosts"
+          git clone https://github.com/goharbor/harbor-helm
+          cd harbor-helm
+          helm install harbor . --set harborAdminPassword=Harbor1234567890 --set logLevel=debug
+          time kubectl wait --for=condition=ready pod --all --timeout=600s
 
-    - name: Prepare data
-      env:
-        K6_QUIET: yes
-        HARBOR_VUS: 20
-        HARBOR_SIZE: ci
-        HARBOR_URL: https://admin:Harbor1234567890@core.harbor.domain
-      run: go run mage.go prepare
+      - name: Prepare data
+        env:
+          K6_QUIET: yes
+          HARBOR_VUS: 20
+          HARBOR_SIZE: ci
+          HARBOR_URL: https://admin:Harbor1234567890@core.harbor.domain
+        run: go run mage.go prepare
 
-    - name: Run all tests
-      env:
-        K6_QUIET: yes
-        HARBOR_VUS: 10
-        HARBOR_ITERATIONS: 10
-        HARBOR_URL: https://admin:Harbor1234567890@core.harbor.domain
-      run: go run mage.go
+      - name: Run all tests
+        env:
+          K6_QUIET: yes
+          HARBOR_VUS: 10
+          HARBOR_ITERATIONS: 10
+          HARBOR_URL: https://admin:Harbor1234567890@core.harbor.domain
+          HARBOR_REPORT: true
+        run: go run mage.go
 
-    - name: Fetch harbor logs
-      if: ${{ failure() }}
-      run: |
-        mkdir -p /tmp/harbor
-        for name in chartmuseum core database jobservice notary-server notary-signer portal redis registry trivy; do \
-          kubectl logs -l "component=$name" --all-containers=true > /tmp/harbor/$name.log ; \
-        done
+      - name: Fetch harbor logs
+        if: ${{ failure() }}
+        run: |
+          mkdir -p /tmp/harbor
+          for name in chartmuseum core database jobservice notary-server notary-signer portal redis registry trivy; do \
+            kubectl logs -l "component=$name" --all-containers=true > /tmp/harbor/$name.log ; \
+          done
 
-    - uses: actions/upload-artifact@v2
-      if: ${{ failure() }}
-      with:
-        name: harbor
-        path: /tmp/harbor
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() }}
+        with:
+          name: harbor
+          path: /tmp/harbor

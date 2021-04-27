@@ -5,6 +5,7 @@ import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { getProjectName, randomItem } from '../helpers.js'
+import { generateSummary } from '../report.js'
 
 const settings = Settings()
 
@@ -46,4 +47,8 @@ export default function () {
         successRate.add(false)
         console.log(e)
     }
+}
+
+export function handleSummary(data) {
+    return generateSummary('list-project-logs')(data)
 }

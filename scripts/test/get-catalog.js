@@ -5,6 +5,7 @@ import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { getProjectName, getRepositoryName, randomItem, randomIntBetween } from '../helpers.js'
+import { generateSummary } from '../report.js'
 
 const settings = Settings()
 
@@ -50,4 +51,8 @@ export default function () {
         successRate.add(false)
         console.log(e)
     }
+}
+
+export function handleSummary(data) {
+    return generateSummary('get-catalog')(data)
 }
