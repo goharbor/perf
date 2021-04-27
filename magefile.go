@@ -14,6 +14,7 @@ import (
 	"github.com/carolynvs/magex/mgx"
 	"github.com/carolynvs/magex/pkg"
 	"github.com/carolynvs/magex/shx"
+	"github.com/goharbor/perf/pkg/report"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
@@ -24,6 +25,7 @@ const (
 	HarborURLEnvKey        = "HARBOR_URL"
 	HarborVusEnvKey        = "HARBOR_VUS"
 	HarborIterationsEnvKey = "HARBOR_ITERATIONS"
+	HarborReport           = "HARBOR_REPORT"
 
 	K6QuietEnvKey        = "K6_QUIET"
 	K6AlwaysUpdateEnvKey = "K6_ALWAYS_UPDATE"
@@ -111,6 +113,10 @@ func All() error {
 		if err := sh.RunWithV(env, "k6", args...); err != nil {
 			return err
 		}
+	}
+
+	if getEnvBool(HarborReport) {
+		return report.MarkdownReport()
 	}
 
 	return nil

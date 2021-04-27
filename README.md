@@ -41,16 +41,17 @@ Then:
 
 The environment variables in the table are the configurations for the performance testing. Use `VAR1=value1 VAR2=value2 go run mage.go target` format to apply the variables to the testing
 
-| Variable                   | Description                                                  | Default value                                 |
-| -------------------------- | ------------------------------------------------------------ | --------------------------------------------- |
-| HARBOR_URL                 | The url of the harbor will be tested, its format is https?://username:password@harbor.domain |               |
-| HARBOR_SIZE                | The user data size to prepare for the tests                  | small                                         |
-| HARBOR_VUS                 | The number of virtual users for the performance test         | 500                                           |
-| HARBOR_ITERATIONS          | The script total iteration limit (among all VUs) for the performance test | 1000                             |
-| K6_ALWAYS_UPDATE           | Always install the latest xk6-harbor                         | false                                         |
-| K6_QUIET                   | Disable progress updates of the k6                           | false                                         |
-| K6_CSV_OUTPUT              | Make k6 output detailed statistics in a CSV format           | false                                         |
-| K6_JSON_OUTPUT             | Make k6 output detailed statistics in JSON format            | false                                         |
+| Variable          | Description                                                  | Default value |
+| ----------------- | ------------------------------------------------------------ | ------------- |
+| HARBOR_URL        | The url of the harbor will be tested, its format is https?://username:password@harbor.domain |               |
+| HARBOR_SIZE       | The user data size to prepare for the tests                  | small         |
+| HARBOR_VUS        | The number of virtual users for the performance test         | 500           |
+| HARBOR_ITERATIONS | The script total iteration limit (among all VUs) for the performance test | 1000          |
+| K6_ALWAYS_UPDATE  | Always install the latest xk6-harbor                         | false         |
+| K6_QUIET          | Disable progress updates of the k6                           | false         |
+| K6_CSV_OUTPUT     | Make k6 output detailed statistics in a CSV format           | false         |
+| K6_JSON_OUTPUT    | Make k6 output detailed statistics in JSON format            | false         |
+| HARBOR_REPORT     | Whether generate testing report                              | false         |
 
 
 The following table includes the targets.
