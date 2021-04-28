@@ -16,7 +16,8 @@ export function generateSummary(desc) {
         'max': toHumanSeconds(data['metrics']['iteration_duration']['values']['max']),
         'p90': toHumanSeconds(data['metrics']['iteration_duration']['values']['p(90)']),
         'p95': toHumanSeconds(data['metrics']['iteration_duration']['values']['p(95)']),
-        'successRate': toHumanRate(data['metrics']['success']['values']['rate'])
+        'successRate': toHumanRate(data['metrics']['success']['values']['rate']),
+        'iterationsRate': `${data['metrics']['iterations']['values']['rate'].toFixed(2)}/s`
       }
 
       const filename = `./outputs/${desc}.summary.json`
