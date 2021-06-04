@@ -3,7 +3,7 @@ import { Rate } from 'k6/metrics'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { fetchUsers, randomItem } from '../helpers.js'
+import { getUsernames, randomItem } from '../helpers.js'
 import { generateSummary } from '../report.js'
 
 const settings = Settings()
@@ -26,10 +26,8 @@ export let options = {
 export function setup() {
     harbor.initialize(settings.Harbor)
 
-    const users = fetchUsers(settings.UsersCount)
-
     return {
-        usernames: users.map(u => u.username)
+        usernames: getUsernames(settings)
     }
 }
 

@@ -11,6 +11,7 @@ export function Settings() {
   }
 
   settings['ProjectPrefix'] = getEnv('PROJECT_PREFIX', 'project')
+  settings['UserPrefix'] = getEnv('USER_PREFIX', 'user')
 
   return settings
 }

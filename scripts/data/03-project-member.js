@@ -4,7 +4,7 @@ import counter from 'k6/x/counter'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { fetchProjects, fetchUsers } from '../helpers.js'
+import { fetchUsers, getProjectNames } from '../helpers.js'
 
 const settings = Settings()
 
@@ -29,11 +29,10 @@ export let options = {
 export function setup() {
     harbor.initialize(settings.Harbor)
 
-    const projects = fetchProjects(settings.ProjectsCount)
-    const users = fetchUsers(settings.UsersCount)
+    const users = fetchUsers(`username=~${settings.UserPrefix}-`, settings.UsersCount)
 
     return {
-        projectNames: projects.map(p => p.name),
+        projectNames: getProjectNames(settings),
         userIDs: users.map(u => u.userID),
     }
 }
