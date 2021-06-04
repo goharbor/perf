@@ -28,17 +28,13 @@ export let options = {
 
 export function setup() {
     harbor.initialize(settings.Harbor)
-
-    return {
-        userPrefix: `user-${Date.now()}`
-    }
 }
 
-export default function ({ userPrefix }) {
+export default function () {
     const suffix = numberToPadString(counter.up(), settings.UsersCount)
 
     try {
-        harbor.createUser(`${userPrefix}-${suffix}`)
+        harbor.createUser(`${settings.UserPrefix}-${suffix}`)
         successRate.add(true)
     } catch (e) {
         successRate.add(false)

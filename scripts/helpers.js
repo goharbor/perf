@@ -91,13 +91,18 @@ export function fetchRepositories(projectName, count=-1) {
     return results
 }
 
-export function fetchUsers(count=-1) {
+export function fetchUsers(q='', count=-1) {
     let page = 1
     const pageSize = 100
 
     const results = []
     while (true) {
-        const { users } = harbor.listUsers({ page, pageSize })
+        const params = { page, pageSize }
+        if (q !== '') {
+            params.q = q
+        }
+
+        const { users } = harbor.listUsers(params)
 
         for (const user of users) {
             // skip admin
@@ -138,6 +143,28 @@ export function numberToPadString(num, maxNum, padString='0') {
 
 export function getProjectName(settings, i) {
     return `${settings.ProjectPrefix}-${numberToPadString(i + 1, settings.ProjectsCount)}`
+}
+
+export function getProjectNames(settings) {
+    const projectNames = []
+    for (let i = 0; i < settings.ProjectsCount; i++) {
+        projectNames.push(getProjectName(settings, i))
+    }
+
+    return projectNames
+}
+
+export function getUsername(settings, i) {
+    return `${settings.UserPrefix}-${numberToPadString(i + 1, settings.UsersCount)}`
+}
+
+export function getUsernames(settings) {
+    const usernames = []
+    for (let i = 0; i < settings.UsersCount; i++) {
+        usernames.push(getUsername(settings, i))
+    }
+
+    return usernames
 }
 
 export function getRepositoryName(settings, i) {
