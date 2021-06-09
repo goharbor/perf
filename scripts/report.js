@@ -8,14 +8,17 @@ export function generateSummary(desc) {
     }
 
     if (getEnvBool('HARBOR_REPORT', 'false')) {
+      const metric = 'iteration_duration{scenario:default}'
+
       const summary = {
+        'timestamp': Date.now(),
         'description': desc,
-        'avg': toHumanSeconds(data['metrics']['iteration_duration']['values']['avg']),
-        'min': toHumanSeconds(data['metrics']['iteration_duration']['values']['min']),
-        'med': toHumanSeconds(data['metrics']['iteration_duration']['values']['med']),
-        'max': toHumanSeconds(data['metrics']['iteration_duration']['values']['max']),
-        'p90': toHumanSeconds(data['metrics']['iteration_duration']['values']['p(90)']),
-        'p95': toHumanSeconds(data['metrics']['iteration_duration']['values']['p(95)']),
+        'avg': toHumanSeconds(data['metrics'][metric]['values']['avg']),
+        'min': toHumanSeconds(data['metrics'][metric]['values']['min']),
+        'med': toHumanSeconds(data['metrics'][metric]['values']['med']),
+        'max': toHumanSeconds(data['metrics'][metric]['values']['max']),
+        'p90': toHumanSeconds(data['metrics'][metric]['values']['p(90)']),
+        'p95': toHumanSeconds(data['metrics'][metric]['values']['p(95)']),
         'successRate': toHumanRate(data['metrics']['success']['values']['rate']),
         'iterationsRate': `${data['metrics']['iterations']['values']['rate'].toFixed(2)}/s`
       }
