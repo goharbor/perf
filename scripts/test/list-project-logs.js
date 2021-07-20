@@ -24,7 +24,6 @@ export let successRate = new Rate('success')
 export let options = {
     setupTimeout: '6h',
     duration: '24h',
-    noUsageReport: true,
     vus: 500,
     iterations: 1000,
     thresholds: {

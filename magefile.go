@@ -139,7 +139,7 @@ func List() error {
 		file := filepath.Base(script)
 		name := strings.TrimSuffix(file, filepath.Ext(file))
 
-		fmt.Printf("%-20s %s\n", name, strings.Trim(lines[0], "// "))
+		fmt.Printf("%-40s %s\n", name, strings.Trim(lines[0], "// "))
 	}
 
 	return nil

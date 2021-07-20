@@ -31,7 +31,7 @@ jobs:
       - name: Install kubernetes
         uses: helm/kind-action@v1.1.0
         with:
-          version: v0.9.0
+          version: v0.11.1
           node_image: kindest/node:v1.20.2
           cluster_name: harbor
           config: .github/kind.yaml
@@ -43,8 +43,17 @@ jobs:
 
       - name: Install nginx ingress controller
         run: |
+          if ! time kubectl wait --for=condition=ready=false node --all --timeout=180s; then
+            kubectl describe node
+          fi
+
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/ingress-nginx-2.3.0/deploy/static/provider/kind/deploy.yaml
-          kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+
+          if ! time kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=300s; then
+            kubectl get all -n ingress-nginx
+            kubectl describe pod -n ingress-nginx
+            exit 1
+          fi
 
       - name: Set up helm
         uses: azure/setup-helm@v1
@@ -57,7 +66,11 @@ jobs:
           git clone https://github.com/goharbor/harbor-helm
           cd harbor-helm
           helm install harbor . --set harborAdminPassword=Harbor1234567890 --set logLevel=debug
-          time kubectl wait --for=condition=ready pod --all --timeout=600s
+          if ! time kubectl wait --for=condition=ready pod --all --timeout=600s; then
+            kubectl get all
+            kubectl describe pod
+            exit 1
+          fi
 
       - name: Prepare data
         env:
@@ -72,6 +85,7 @@ jobs:
           K6_QUIET: yes
           HARBOR_VUS: 10
           HARBOR_ITERATIONS: 10
+          HARBOR_SIZE: ci
           HARBOR_URL: https://admin:Harbor1234567890@core.harbor.domain
           HARBOR_REPORT: true
         run: go run mage.go
@@ -89,3 +103,15 @@ jobs:
         with:
           name: harbor
           path: /tmp/harbor
+
+      - name: Fetch cluster logs
+        if: ${{ failure() }}
+        run: |
+          mkdir -p /tmp/logs
+          kind export logs --name harbor /tmp/logs
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() }}
+        with:
+          name: kind
+          path: /tmp/logs
