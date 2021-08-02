@@ -74,6 +74,18 @@ function getUserDataSettings() {
       AuditLogsCount: 100000,
       BlobSize: getEnv('BLOB_SIZE', '1 KiB'),
       BlobsCountPerArtifact: getEnv('BLOBS_COUNT_PER_ARTIFACT', 1)
+    },
+    medium: {
+      VUS: getEnvInt('HARBOR_VUS', '300'),
+      ProjectsCount: 200,
+      RepositoriesCountPerProject: 200,
+      ArtifactsCountPerRepository: 20,
+      ArtifactTagsCountPerArtifact: 10,
+      UsersCount: 200,
+      ProjectMembersCountPerProject: 20,
+      AuditLogsCount: 200000,
+      BlobSize: getEnv('BLOB_SIZE', '1 KiB'),
+      BlobsCountPerArtifact: getEnv('BLOBS_COUNT_PER_ARTIFACT', 1)
     }
   }[userDataSize]
 }
