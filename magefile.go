@@ -230,7 +230,7 @@ func addHarborSizeToEnv(env map[string]string) map[string]string {
 	size := os.Getenv(HarborSizeEnvKey)
 
 	switch size {
-	case "ci", "small":
+	case "ci", "small", "medium":
 		env[HarborSizeEnvKey] = size
 	case "":
 		mgx.Must(fmt.Errorf("env %s required", HarborSizeEnvKey))
