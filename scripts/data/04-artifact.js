@@ -14,29 +14,11 @@ const totalIterations = settings.ProjectsCount * settings.RepositoriesCountPerPr
 
 const store = new ContentStore('data')
 
-let allBlobs = new SharedArray('allBlobs', function () {
+const allBlobs = new SharedArray('allBlobs', function () {
     return store.generateMany(settings.BlobSize, totalIterations * settings.BlobsCountPerArtifact)
-});
+})
 
-export let successRate = new Rate('success')
-
-export let options = {
-    setupTimeout: '6h',
-    duration: '24h',
-    vus:  Math.min(settings.VUS, totalIterations),
-    iterations: totalIterations,
-    thresholds: {
-        'success': ['rate>=1'],
-        'iteration_duration{scenario:default}': [
-            `max>=0`,
-        ],
-        'iteration_duration{group:::setup}': [`max>=0`],
-    }
-};
-
-export function setup() {
-    harbor.initialize(settings.Harbor)
-
+const refs = new SharedArray('refs', function () {
     const arr = []
     for (let i = 0; i < settings.ProjectsCount; i++) {
         const projectName = getProjectName(settings, i)
@@ -56,19 +38,37 @@ export function setup() {
 
     const artifactsPerProject = settings.RepositoriesCountPerProject * settings.ArtifactsCountPerRepository
 
-    const refs = []
+    const results = []
     for (let i = 0; i < artifactsPerProject; i++) {
         for (let j = 0; j < arr.length; j++) {
-            refs.push(arr[j][i])
+            results.push(arr[j][i])
         }
     }
 
-    return {
-        refs,
+    return results
+})
+
+export let successRate = new Rate('success')
+
+export let options = {
+    setupTimeout: '6h',
+    duration: '24h',
+    vus: Math.min(settings.VUS, totalIterations),
+    iterations: totalIterations,
+    thresholds: {
+        'success': ['rate>=1'],
+        'iteration_duration{scenario:default}': [
+            `max>=0`,
+        ],
+        'iteration_duration{group:::setup}': [`max>=0`],
     }
+};
+
+export function setup() {
+    harbor.initialize(settings.Harbor)
 }
 
-export default function ({ refs }) {
+export default function () {
     const i = counter.up() - 1
 
     const ref = refs[i]
