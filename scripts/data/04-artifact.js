@@ -53,6 +53,7 @@ export let successRate = new Rate('success')
 export let options = {
     setupTimeout: '6h',
     duration: '24h',
+    teardownTimeout: '6h',
     vus: Math.min(settings.VUS, totalIterations),
     iterations: totalIterations,
     thresholds: {
