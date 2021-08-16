@@ -5,7 +5,7 @@ import harbor from 'k6/x/harbor'
 import { ContentStore } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { getProjectNames, randomItem } from '../helpers.js'
+import { getProjectNames, randomItem, numberToPadString } from '../helpers.js'
 import { generateSummary } from '../report.js'
 
 const settings = Settings()
@@ -32,25 +32,27 @@ export let options = {
 export function setup() {
     harbor.initialize(settings.Harbor)
 
+    const projectName = randomItem(getProjectNames(settings))
+    const repositoryName = `repository-${Date.now()}`
+
     const blobsArr = []
+    const refs = []
     for (let i = 0; i < options.iterations; i++) {
         blobsArr.push(store.generateMany(settings.BlobSize, settings.BlobsCountPerArtifact))
+        refs.push(`${projectName}/${repositoryName}:tag-${numberToPadString(i, options.iterations)}`)
     }
 
     return {
         blobsArr,
-        projectName: randomItem(getProjectNames(settings)),
-        repositoryName: `repository-${Date.now()}`
+        refs
     }
 }
 
-export default function ({ blobsArr, projectName, repositoryName }) {
+export default function ({ blobsArr, refs }) {
     const i = counter.up() - 1
 
-    const ref = `${projectName}/${repositoryName}:tag-${i}`
-
     try {
-        harbor.push({ ref, store, blobs: blobsArr[i] })
+        harbor.push({ ref: refs[i], store, blobs: blobsArr[i] })
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
@@ -58,10 +60,13 @@ export default function ({ blobsArr, projectName, repositoryName }) {
     }
 }
 
-export function teardown({ projectName, repositoryName }) {
+export function teardown({ refs }) {
     store.free()
 
-    harbor.deleteRepository(projectName, repositoryName)
+    for (const ref of refs) {
+        const r = /([^/]+)\/([^:]+):(.*)/.exec(ref)
+        harbor.deleteArtifact(r[1], r[2], r[3])
+    }
 }
 
 export function handleSummary(data) {
