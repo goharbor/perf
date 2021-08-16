@@ -188,7 +188,7 @@ func installK6() error {
 
 	path := filepath.Join(pkg.GetGopathBin(), cmd)
 
-	ldflags := fmt.Sprintf(`-extldflags -static -X "github.com/loadimpact/k6/lib/consts.VersionDetails=%s"`, commit)
+	ldflags := fmt.Sprintf(`-extldflags -static -X "go.k6.io/k6/lib/consts.VersionDetails=%s"`, commit)
 
 	err = shx.Command("go", "build", "-ldflags="+ldflags, "-o", path, "./cmd/k6/main.go").Env("CGO_ENABLED=0").In(repoPath).RunE()
 	if err != nil {
