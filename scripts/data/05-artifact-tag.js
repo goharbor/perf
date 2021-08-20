@@ -5,7 +5,7 @@ import counter from 'k6/x/counter'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { getProjectName, getRepositoryName, getArtifactTag, getArtifactNewTag } from '../helpers.js'
+import { getProjectName, getRepositoryName, getArtifactTag, getArtifactNewTag, retry } from '../helpers.js'
 
 const settings = Settings()
 
@@ -74,7 +74,7 @@ export default function () {
     const t = newTags[i]
 
     try {
-        harbor.createArtifactTag(t.projectName, t.repositoryName, t.tag, t.newTag)
+        retry(() => harbor.createArtifactTag(t.projectName, t.repositoryName, t.tag, t.newTag))
         successRate.add(true)
     } catch (e) {
         successRate.add(false)

@@ -5,7 +5,7 @@ import counter from 'k6/x/counter'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { randomItem, getProjectName, getRepositoryName, getArtifactTag } from '../helpers.js'
+import { getProjectName, getRepositoryName, getArtifactTag, randomItem, retry } from '../helpers.js'
 
 const settings = Settings()
 
@@ -63,7 +63,7 @@ export default function () {
     const ref = `${a.projectName}/${a.repositoryName}:${a.tag}`
 
     try {
-        harbor.getManifest(ref)
+        retry(() => harbor.getManifest(ref))
         successRate.add(true)
     } catch (e) {
         successRate.add(false)

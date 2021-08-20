@@ -1,5 +1,6 @@
 
 import harbor from 'k6/x/harbor'
+import { sleep } from 'k6'
 
 export function fetchAritfacts(projectName, repositoryName, count=-1) {
     let page = 1
@@ -177,4 +178,30 @@ export function getArtifactTag(settings, i) {
 
 export function getArtifactNewTag(settings, tagIndex, newTagIndex) {
     return `${getArtifactTag(settings, tagIndex)}p${numberToPadString(newTagIndex+1, settings.ArtifactTagsCountPerArtifact)}`
+}
+
+export function retry(f, opts = {}) {
+    var DEFAULT_TIMES = 5
+
+    var options = {
+        times: +opts.times || DEFAULT_TIMES,
+        intervalFunc: typeof opts.interval === 'function' ? opts.interval : () => (+t.interval || randomIntBetween(1, 5))
+    }
+
+    var attempt = 1;
+
+    while (attempt++ < options.times) {
+        try {
+            return f()
+        } catch (e) {
+            const delay = options.intervalFunc(attempt)
+            if (delay > 0) {
+                sleep(d)
+            }
+
+            if (attempts >= options.times) {
+                throw e
+            }
+        }
+    }
 }
