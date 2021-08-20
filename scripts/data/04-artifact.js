@@ -6,7 +6,7 @@ import harbor from 'k6/x/harbor'
 import { ContentStore } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
-import { getProjectName, getRepositoryName, getArtifactTag } from '../helpers.js'
+import { getProjectName, getRepositoryName, getArtifactTag, retry } from '../helpers.js'
 
 const settings = Settings()
 
@@ -80,7 +80,7 @@ export default function () {
     }
 
     try {
-        harbor.push({ ref, store, blobs })
+        retry(() => harbor.push({ ref, store, blobs }))
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
