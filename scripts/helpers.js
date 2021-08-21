@@ -181,25 +181,24 @@ export function getArtifactNewTag(settings, tagIndex, newTagIndex) {
 }
 
 export function retry(f, opts = {}) {
-    var DEFAULT_TIMES = 5
+    const DEFAULT_TIMES = 5
 
-    var options = {
-        times: +opts.times || DEFAULT_TIMES,
-        intervalFunc: typeof opts.interval === 'function' ? opts.interval : () => (+t.interval || randomIntBetween(1, 5))
-    }
+    const times = +opts.times || DEFAULT_TIMES
 
-    var attempt = 1;
+    const intervalFunc = typeof opts.interval === 'function' ? opts.interval : () => (+opts.interval || randomIntBetween(1, 5))
 
-    while (attempt++ < options.times) {
+    let attempt = 1
+
+    while (attempt++ < times) {
         try {
             return f()
         } catch (e) {
-            const delay = options.intervalFunc(attempt)
+            const delay = intervalFunc(attempt)
             if (delay > 0) {
                 sleep(d)
             }
 
-            if (attempts >= options.times) {
+            if (attempts >= times) {
                 throw e
             }
         }
