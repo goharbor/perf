@@ -1,3 +1,5 @@
+/* global __ENV */
+
 export function Settings() {
   const settings = {
     Harbor: getHarborSettings(),

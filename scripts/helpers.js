@@ -7,7 +7,7 @@ export function fetchAritfacts(projectName, repositoryName, count=-1) {
     const pageSize = 100
 
     const results = []
-    while (true) {
+    while (true) { // eslint-disable-line
         const { artifacts } = harbor.listArtifacts(projectName, repositoryName, { page, pageSize })
 
         for (const artifact of artifacts) {
@@ -37,7 +37,7 @@ export function fetchProjects(count=-1) {
     const pageSize = 100
 
     const results = []
-    while (true) {
+    while (true) { // eslint-disable-line
         const { projects } = harbor.listProjects({ page, pageSize })
 
         for (const project of projects) {
@@ -67,7 +67,7 @@ export function fetchRepositories(projectName, count=-1) {
     const pageSize = 100
 
     const results = []
-    while (true) {
+    while (true) { // eslint-disable-line
         const { repositories } = harbor.listRepositories(projectName, { page, pageSize })
 
         for (const repository of repositories) {
@@ -97,7 +97,7 @@ export function fetchUsers(q='', count=-1) {
     const pageSize = 100
 
     const results = []
-    while (true) {
+    while (true) { // eslint-disable-line
         const params = { page, pageSize }
         if (q !== '') {
             params.q = q
@@ -195,10 +195,10 @@ export function retry(f, opts = {}) {
         } catch (e) {
             const delay = intervalFunc(attempt)
             if (delay > 0) {
-                sleep(d)
+                sleep(delay)
             }
 
-            if (attempts >= times) {
+            if (attempt >= times) {
                 throw e
             }
         }
