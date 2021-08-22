@@ -1,3 +1,5 @@
+/* eslint-disable no-prototype-builtins, no-redeclare */
+
 var forEach = function (obj, callback) {
   for (var key in obj) {
     if (obj.hasOwnProperty(key)) {

@@ -3,7 +3,7 @@ import { Rate } from 'k6/metrics'
 import counter from 'k6/x/counter'
 import harbor from 'k6/x/harbor'
 
-import { Settings, getEnv } from '../config.js'
+import { Settings } from '../config.js'
 import { numberToPadString } from '../helpers.js'
 
 const settings = Settings()

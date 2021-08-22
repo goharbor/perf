@@ -1,7 +1,6 @@
 // prepare audit logs
 import { SharedArray } from 'k6/data'
 import { Rate } from 'k6/metrics'
-import counter from 'k6/x/counter'
 import harbor from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
@@ -33,7 +32,7 @@ let artifacts = new SharedArray('artifacts', function () {
     }
 
     return results
-});
+})
 
 export let successRate = new Rate('success')
 
@@ -56,11 +55,9 @@ export function setup() {
 }
 
 export default function () {
-    const i = counter.up() - 1
+    const artifact = randomItem(artifacts)
 
-    const a = randomItem(artifacts)
-
-    const ref = `${a.projectName}/${a.repositoryName}:${a.tag}`
+    const ref = `${artifact.projectName}/${artifact.repositoryName}:${artifact.tag}`
 
     try {
         retry(() => harbor.getManifest(ref))

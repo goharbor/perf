@@ -1,0 +1,22 @@
+{
+  "name": "perf",
+  "version": "1.0.0",
+  "description": "This repository includes scripts for the performance test of harbor.",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^7.32.0"
+  },
+  "scripts": {
+    "lint": "eslint ./scripts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/goharbor/perf.git"
+  },
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/goharbor/perf/issues"
+  },
+  "homepage": "https://github.com/goharbor/perf#readme"
+}
