@@ -14,6 +14,7 @@ export function Settings() {
 
   settings['ProjectPrefix'] = getEnv('PROJECT_PREFIX', 'project')
   settings['UserPrefix'] = getEnv('USER_PREFIX', 'user')
+  settings['ScannerURL'] = getEnv('SCANNER_URL', '')
 
   return settings
 }
