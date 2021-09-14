@@ -24,7 +24,7 @@ const missing = Object()
 export function getEnv(env, def = missing) {
   const value = __ENV[env] ? __ENV[env] : def
   if (value === missing) {
-    throw (`${env} envirument is required`)
+    throw (`${env} environment is required`)
   }
 
   return value
