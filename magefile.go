@@ -27,6 +27,7 @@ const (
 	HarborIterationsEnvKey = "HARBOR_ITERATIONS"
 	HarborReport           = "HARBOR_REPORT"
 
+	K6Command            = "k6-harbor"
 	K6QuietEnvKey        = "K6_QUIET"
 	K6AlwaysUpdateEnvKey = "K6_ALWAYS_UPDATE"
 
@@ -66,7 +67,7 @@ func Prepare() error {
 	for _, script := range scripts {
 		args := getK6RunArgs(script)
 
-		if err := sh.RunWithV(env, "k6", args...); err != nil {
+		if err := sh.RunWithV(env, K6Command, args...); err != nil {
 			return err
 		}
 	}
@@ -89,7 +90,7 @@ func Run(test string) error {
 
 	args := addVusAndIterationsArgs(getK6RunArgs(scripts[0]))
 
-	if err := sh.RunWithV(env, "k6", args...); err != nil {
+	if err := sh.RunWithV(env, K6Command, args...); err != nil {
 		return err
 	}
 
@@ -110,7 +111,7 @@ func All() error {
 	for _, script := range scripts {
 		args := addVusAndIterationsArgs(getK6RunArgs(script))
 
-		if err := sh.RunWithV(env, "k6", args...); err != nil {
+		if err := sh.RunWithV(env, K6Command, args...); err != nil {
 			return err
 		}
 	}
@@ -146,9 +147,7 @@ func List() error {
 }
 
 func ensureK6(force bool) error {
-	cmd := "k6"
-
-	found, err := pkg.IsCommandAvailable(cmd, "")
+	found, err := pkg.IsCommandAvailable(K6Command, "")
 	if err != nil {
 		return err
 	}
@@ -161,11 +160,9 @@ func ensureK6(force bool) error {
 }
 
 func installK6() error {
-	cmd := "k6"
-
 	pkg.EnsureGopathBin()
 
-	fmt.Printf("Installing %s\n", cmd)
+	fmt.Printf("Installing %s\n", K6Command)
 
 	tmp, err := ioutil.TempDir("", "k6")
 	if err != nil {
@@ -186,13 +183,13 @@ func installK6() error {
 		return errors.Wrap(err, "cound not get git commit")
 	}
 
-	path := filepath.Join(pkg.GetGopathBin(), cmd)
+	path := filepath.Join(pkg.GetGopathBin(), K6Command)
 
 	ldflags := fmt.Sprintf(`-extldflags -static -X "go.k6.io/k6/lib/consts.VersionDetails=%s"`, commit)
 
 	err = shx.Command("go", "build", "-ldflags="+ldflags, "-o", path, "./cmd/k6/main.go").Env("CGO_ENABLED=0").In(repoPath).RunE()
 	if err != nil {
-		return errors.Wrap(err, "could not build k6")
+		return errors.Wrap(err, fmt.Sprintf("could not build %s", K6Command))
 	}
 
 	return nil
@@ -235,7 +232,7 @@ func addHarborSizeToEnv(env map[string]string) map[string]string {
 	case "":
 		mgx.Must(fmt.Errorf("env %s required", HarborSizeEnvKey))
 	default:
-		mgx.Must(fmt.Errorf("unknow user data size \"%s\", it must be in (ci, small)", size))
+		mgx.Must(fmt.Errorf("unknown user data size \"%s\", it must be in (ci, small)", size))
 	}
 
 	return env
