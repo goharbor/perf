@@ -10,6 +10,7 @@ const settings = Settings()
 export let successRate = new Rate('success')
 
 export let options = {
+    insecureSkipTLSVerify: true,
     setupTimeout: '6h',
     duration: '24h',
     vus: 500,
