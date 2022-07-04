@@ -62,3 +62,47 @@ The following table includes the targets.
 | run     | Execute a specific test                        | HARBOR_URL=https://admin:password@harbor.domain go run mage.go run list-projects         |
 | all     | Execute all tasks                              | HARBOR_URL=https://admin:password@harbor.domain go run mage.go all                       |
 | list    | Print all test                                 | go run mage.go list                                                                      |
+| compare | Compare performance                            | go run mage.go compare 251 252                                                           |
+
+## Performance comparison
+
+Compare the performance of harbor different versions, the format of HTML
+comparison bar can be generated easily by subcommand. Before you need to retain
+the outputs folder every time and then rename them to a meaningful name.
+
+For example, if we want to compare the performance of harbor 2.5.1 and 2.5.2, we
+can just follow the steps:
+
+1. Deploy harbor 2.5.1, prepare data and run tests
+  ```shell
+    export HARBOR_URL=https://admin:password@harbor.domain
+    export HARBOR_SIZE=small
+    # prepare data
+    go run mage.go prepare
+    # run tests
+    go run mage.go
+    # retain the outputs result
+    mv outputs 251 && mkdir outputs
+  ```
+
+2. Deploy harbor 2.5.2, prepare data and run tests
+
+  ```shell
+    export HARBOR_URL=https://admin:password@harbor.domain
+    export HARBOR_SIZE=small
+    # prepare data
+    go run mage.go prepare
+    # run tests
+    go run mage.go
+    # retain the outputs result
+    mv outputs 252 && mkdir outputs
+  ```
+
+3. Compare
+  ```shell
+   # use outputs result folder name as parameters
+   go run mage.go compare 251 252
+   # then you can see the comparison in the browser
+   open ./outputs/api-comparison.html
+   open ./outputs/pull-push-comparison.html
+  ```

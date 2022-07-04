@@ -1,3 +1,4 @@
+//go:build mage
 // +build mage
 
 package main
@@ -144,6 +145,15 @@ func List() error {
 	}
 
 	return nil
+}
+
+// Compare compares two performance result and render chart.
+func Compare(dir1, dir2 string) error {
+	if dir1 == "" || dir2 == "" {
+		return fmt.Errorf("invalid input dir, dir1: %s, dir2: %s", dir1, dir2)
+	}
+
+	return report.Compare(dir1, dir2)
 }
 
 func ensureK6(force bool) error {
