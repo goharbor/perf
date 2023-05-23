@@ -138,8 +138,8 @@ func renderAPIChart(bar *charts.Bar, dirs ...string) error {
 	bar.SetGlobalOptions(
 		charts.WithTitleOpts(opts.Title{
 			Title:    "Harbor Performance",
-			Subtitle: strings.Join(dirs, " VS. "),
-			Right:    "40%",
+			Subtitle: strings.Join(dirs, " VS. ") + "(the smaller the better)",
+			Right:    "45%",
 		}),
 		charts.WithXAxisOpts(opts.XAxis{
 			Name:      "API",
@@ -152,7 +152,7 @@ func renderAPIChart(bar *charts.Bar, dirs ...string) error {
 			Width:  "1600px",
 			Height: "800px",
 		}),
-		charts.WithLegendOpts(opts.Legend{Right: "80%", Data: dirs}),
+		charts.WithLegendOpts(opts.Legend{Right: "80%", Data: dirs, Show: true}),
 		charts.WithToolboxOpts(opts.Toolbox{Show: true}),
 	)
 
@@ -173,8 +173,8 @@ func renderPullChart(bar *charts.Bar, dirs ...string) error {
 	bar.SetGlobalOptions(
 		charts.WithTitleOpts(opts.Title{
 			Title:    "Harbor Performance",
-			Subtitle: strings.Join(dirs, " VS. "),
-			Right:    "40%",
+			Subtitle: strings.Join(dirs, " VS. ") + "(the smaller the better)",
+			Right:    "45%",
 		}),
 		charts.WithXAxisOpts(opts.XAxis{
 			Name:      "PULL/PUSH",
@@ -187,7 +187,7 @@ func renderPullChart(bar *charts.Bar, dirs ...string) error {
 			Width:  "1600px",
 			Height: "800px",
 		}),
-		charts.WithLegendOpts(opts.Legend{Right: "80%", Data: dirs}),
+		charts.WithLegendOpts(opts.Legend{Right: "80%", Data: dirs, Show: true}),
 		charts.WithToolboxOpts(opts.Toolbox{Show: true}),
 	)
 
