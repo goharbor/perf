@@ -1,6 +1,6 @@
 // test the performance for the get repo API
 import { Rate } from 'k6/metrics'
-import harbor from 'k6/x/harbor'
+import { Harbor } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { randomItem } from '../helpers.js'
@@ -23,8 +23,9 @@ export let options = {
     }
 };
 
+const harbor = new Harbor(settings.Harbor)
+
 export function setup() {
-    harbor.initialize(settings.Harbor)
     // find a repo
     const { projects } = harbor.listProjects({ page: 1, pageSize: 10 })
     for (let i = 0; i < projects.length; i++) {
@@ -48,7 +49,7 @@ export default function ({ projectName, repositoryName }) {
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
-        console.log(e)
+        console.error(e.message)
     }
 }
 

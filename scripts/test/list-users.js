@@ -1,6 +1,6 @@
 // test the performance for the list users API
 import { Rate } from 'k6/metrics'
-import harbor from 'k6/x/harbor'
+import { Harbor } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { generateSummary } from '../report.js'
@@ -22,9 +22,9 @@ export let options = {
     }
 };
 
-export function setup() {
-    harbor.initialize(settings.Harbor)
+const harbor = new Harbor(settings.Harbor)
 
+export function setup() {
     const { total } = harbor.listUsers({ page: 1, pageSize: 1 })
 
     console.log(`total users: ${total}`)
@@ -44,7 +44,7 @@ export default function ({ usersCount }) {
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
-        console.log(e)
+        console.error(e.message)
     }
 }
 

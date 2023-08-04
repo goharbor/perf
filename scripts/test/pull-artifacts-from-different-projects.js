@@ -1,7 +1,6 @@
 // test the performance for pulling artifacts from different projects
 import { Rate } from 'k6/metrics'
-import harbor from 'k6/x/harbor'
-import { ContentStore } from 'k6/x/harbor'
+import { Harbor, ContentStore } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { getProjectNames, randomItem } from '../helpers.js'
@@ -28,9 +27,9 @@ export let options = {
     }
 };
 
-export function setup() {
-    harbor.initialize(settings.Harbor)
+const harbor = new Harbor(settings.Harbor)
 
+export function setup() {
     const projectNames = getProjectNames(settings)
     const repositoryName = `repository-${Date.now()}`
     const reference = `tag-${Date.now()}`
@@ -58,7 +57,7 @@ export default function ({ projectNames, repositoryName, reference }) {
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
-        console.log(e)
+        console.error(e.message)
     }
 }
 
