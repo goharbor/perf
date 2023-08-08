@@ -2,7 +2,7 @@
 import { SharedArray } from 'k6/data'
 import { Rate } from 'k6/metrics'
 import counter from 'k6/x/counter'
-import harbor from 'k6/x/harbor'
+import { Harbor } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { getProjectName, getRepositoryName, getArtifactTag, getArtifactNewTag, retry } from '../helpers.js'
@@ -23,7 +23,7 @@ let newTags = new SharedArray('newTags', function () {
 
             for (let k = 0; k < settings.ArtifactsCountPerRepository; k++) {
 
-                for (let l = 0; l < settings.ArtifactTagsCountPerArtifact -1; l++) {
+                for (let l = 0; l < settings.ArtifactTagsCountPerArtifact - 1; l++) {
                     chunk.push({
                         projectName: getProjectName(settings, i),
                         repositoryName: getRepositoryName(settings, j),
@@ -53,7 +53,7 @@ export let successRate = new Rate('success')
 export let options = {
     setupTimeout: '6h',
     duration: '24h',
-    vus:  Math.min(settings.VUS, totalIterations),
+    vus: Math.min(settings.VUS, totalIterations),
     iterations: totalIterations,
     thresholds: {
         'success': ['rate>=1'],
@@ -64,9 +64,7 @@ export let options = {
     }
 };
 
-export function setup() {
-    harbor.initialize(settings.Harbor)
-}
+const harbor = new Harbor(settings.Harbor)
 
 export default function () {
     const i = counter.up() - 1
@@ -78,6 +76,6 @@ export default function () {
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
-        console.log(e)
+        console.error(e.message)
     }
 }

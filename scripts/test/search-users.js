@@ -1,6 +1,6 @@
 // test the performance for the search users API
 import { Rate } from 'k6/metrics'
-import harbor from 'k6/x/harbor'
+import { Harbor } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { getUsernames, randomItem } from '../helpers.js'
@@ -23,9 +23,9 @@ export let options = {
     }
 };
 
-export function setup() {
-    harbor.initialize(settings.Harbor)
+const harbor = new Harbor(settings.Harbor)
 
+export function setup() {
     return {
         usernames: getUsernames(settings)
     }
@@ -39,7 +39,7 @@ export default function ({ usernames }) {
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
-        console.log(e)
+        console.error(e.message)
     }
 }
 

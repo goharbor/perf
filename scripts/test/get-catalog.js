@@ -1,7 +1,7 @@
 // test the performance for v2 catalog API
 import { SharedArray } from 'k6/data'
 import { Rate } from 'k6/metrics'
-import harbor from 'k6/x/harbor'
+import { Harbor } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { getProjectName, getRepositoryName, randomItem, randomIntBetween } from '../helpers.js'
@@ -36,9 +36,7 @@ export let options = {
     }
 };
 
-export function setup() {
-    harbor.initialize(settings.Harbor)
-}
+const harbor = new Harbor(settings.Harbor)
 
 export default function () {
     const n = randomIntBetween(1, repositories.length)
@@ -49,7 +47,7 @@ export default function () {
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
-        console.log(e)
+        console.error(e.message)
     }
 }
 

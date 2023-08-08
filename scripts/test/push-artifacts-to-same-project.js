@@ -1,8 +1,7 @@
 // test the performance for pushing artifacts to same project
 import { Rate } from 'k6/metrics'
 import counter from 'k6/x/counter'
-import harbor from 'k6/x/harbor'
-import { ContentStore } from 'k6/x/harbor'
+import { Harbor, ContentStore } from 'k6/x/harbor'
 
 import { Settings } from '../config.js'
 import { getProjectNames, randomItem, numberToPadString } from '../helpers.js'
@@ -29,9 +28,9 @@ export let options = {
     }
 };
 
-export function setup() {
-    harbor.initialize(settings.Harbor)
+const harbor = new Harbor(settings.Harbor)
 
+export function setup() {
     const projectName = randomItem(getProjectNames(settings))
     const repositoryName = `repository-${Date.now()}`
 
@@ -56,7 +55,7 @@ export default function ({ blobsArr, refs }) {
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
-        console.log(e)
+        console.error(e.message)
     }
 }
 

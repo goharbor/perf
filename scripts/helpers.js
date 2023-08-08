@@ -1,8 +1,6 @@
-
-import harbor from 'k6/x/harbor'
 import { sleep } from 'k6'
 
-export function fetchAritfacts(projectName, repositoryName, count=-1) {
+export function fetchAritfacts(harbor, projectName, repositoryName, count = -1) {
     let page = 1
     const pageSize = 100
 
@@ -32,7 +30,7 @@ export function fetchAritfacts(projectName, repositoryName, count=-1) {
     return results
 }
 
-export function fetchProjects(count=-1) {
+export function fetchProjects(harbor, count = -1) {
     let page = 1
     const pageSize = 100
 
@@ -62,7 +60,7 @@ export function fetchProjects(count=-1) {
     return results
 }
 
-export function fetchRepositories(projectName, count=-1) {
+export function fetchRepositories(harbor, projectName, count = -1) {
     let page = 1
     const pageSize = 100
 
@@ -92,7 +90,7 @@ export function fetchRepositories(projectName, count=-1) {
     return results
 }
 
-export function fetchUsers(q='', count=-1) {
+export function fetchUsers(harbor, q = '', count = -1) {
     let page = 1
     const pageSize = 100
 
@@ -138,7 +136,7 @@ export function randomItem(items) {
     return items[Math.floor(Math.random() * items.length)];
 }
 
-export function numberToPadString(num, maxNum, padString='0') {
+export function numberToPadString(num, maxNum, padString = '0') {
     return `${num}`.padStart(maxNum.toString().length, padString)
 }
 
@@ -177,7 +175,7 @@ export function getArtifactTag(settings, i) {
 }
 
 export function getArtifactNewTag(settings, tagIndex, newTagIndex) {
-    return `${getArtifactTag(settings, tagIndex)}p${numberToPadString(newTagIndex+1, settings.ArtifactTagsCountPerArtifact)}`
+    return `${getArtifactTag(settings, tagIndex)}p${numberToPadString(newTagIndex + 1, settings.ArtifactTagsCountPerArtifact)}`
 }
 
 export function retry(f, opts = {}) {

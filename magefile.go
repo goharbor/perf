@@ -42,7 +42,7 @@ var Default = All
 
 // Install Mage if necessary
 func EnsureMage() error {
-	return pkg.EnsureMage("v1.11.0")
+	return pkg.EnsureMage("v1.15.0")
 }
 
 // Install K6 with harbor extension if necessary
@@ -180,7 +180,7 @@ func installK6() error {
 	}
 	defer os.RemoveAll(tmp)
 
-	repoUrl := "https://github.com/heww/xk6-harbor.git"
+	repoUrl := "https://github.com/goharbor/xk6-harbor.git"
 	err = shx.Command("git", "clone", repoUrl).CollapseArgs().In(tmp).RunE()
 	if err != nil {
 		return errors.Wrapf(err, "could not clone %s", repoUrl)
