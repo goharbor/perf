@@ -34,6 +34,15 @@ const (
 
 	K6CsvOutputEnvKey  = "K6_CSV_OUTPUT"
 	K6JsonOutputEnvKey = "K6_JSON_OUTPUT"
+
+	// xk6-output-prometheus-remote related configurations
+	K6Out                                = "K6_OUT"
+	K6PrometheusRwInsecureSkipTlsVerify  = "K6_PROMETHEUS_RW_INSECURE_SKIP_TLS_VERIFY"
+	K6PrometheusRwServerURL              = "K6_PROMETHEUS_RW_SERVER_URL"
+	K6PrometheusRwUsername               = "K6_PROMETHEUS_RW_USERNAME"
+	K6PrometheusRwPassword               = "K6_PROMETHEUS_RW_PASSWORD"
+	K6PrometheusRwTrendAsNativeHistogram = "K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM"
+	K6PrometheusRwTrendStats             = "K6_PROMETHEUS_RW_TREND_STATS"
 )
 
 // Default target to run when none is specified
@@ -226,6 +235,34 @@ func addHarborEnv(env map[string]string) map[string]string {
 		env["HARBOR_PASSWORD"], _ = u.User.Password()
 	}
 
+	// send metrics to prometheus
+	if promURL := os.Getenv(K6PrometheusRwServerURL); promURL != "" {
+		env[K6PrometheusRwServerURL] = promURL
+		env[K6Out] = "xk6-prometheus-rw"
+
+		if username := os.Getenv(K6PrometheusRwUsername); username != "" {
+			env[K6PrometheusRwUsername] = username
+		}
+		if password := os.Getenv(K6PrometheusRwPassword); password != "" {
+			env[K6PrometheusRwPassword] = password
+		}
+
+		if getEnvBool(K6PrometheusRwTrendAsNativeHistogram) {
+			env[K6PrometheusRwTrendAsNativeHistogram] = "true"
+		}
+
+		if getEnvBool(K6PrometheusRwInsecureSkipTlsVerify) {
+			env[K6PrometheusRwInsecureSkipTlsVerify] = "true"
+		}
+
+		if stats := os.Getenv(K6PrometheusRwTrendStats); stats != "" {
+			env[K6PrometheusRwTrendStats] = stats
+		} else {
+			// set the following trend stats by default
+			env[K6PrometheusRwTrendStats] = "min,p(90),p(95),p(99),max"
+		}
+	}
+
 	return env
 }
 
@@ -270,6 +307,19 @@ func getK6RunArgs(script string) []string {
 
 	if hasOutputs {
 		args = append(args, "--tag", fmt.Sprintf("script=%s", scriptName))
+	}
+	// append testid as tag if send metrics to prometheus
+	if os.Getenv(K6PrometheusRwServerURL) != "" {
+		size := os.Getenv(HarborSizeEnvKey)
+		vus := os.Getenv(HarborVusEnvKey)
+		if vus == "" {
+			// the default VUS in script is 500 if user not specified
+			vus = "500"
+		}
+		// these tags will be the custom label for prom metrics
+		args = append(args, "--tag", fmt.Sprintf("testid=%s", scriptName))
+		args = append(args, "--tag", fmt.Sprintf("size=%s", size))
+		args = append(args, "--tag", fmt.Sprintf("vus=%s", vus))
 	}
 
 	return args
