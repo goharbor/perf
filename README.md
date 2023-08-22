@@ -37,7 +37,7 @@ Then:
   go run mage.go
   ```
 
-## The environment variables  and targets
+## The environment variables and targets
 
 The environment variables in the table are the configurations for the performance testing. Use `VAR1=value1 VAR2=value2 go run mage.go target` format to apply the variables to the testing
 
@@ -52,6 +52,16 @@ The environment variables in the table are the configurations for the performanc
 | K6_CSV_OUTPUT     | Make k6 output detailed statistics in a CSV format           | false         |
 | K6_JSON_OUTPUT    | Make k6 output detailed statistics in JSON format            | false         |
 | HARBOR_REPORT     | Whether generate testing report                              | false         |
+
+**Experimental** to send the metrics to the prometheus. (Refer to <https://k6.io/docs/results-output/real-time/prometheus-remote-write> for more details)
+| Variable          | Description                                                  | Default value |
+| ----------------- | ------------------------------------------------------------ | ------------- |
+| K6_PROMETHEUS_RW_SERVER_URL | URL of the Prometheus remote write implementation's endpoint |     |
+| K6_PROMETHEUS_RW_USERNAME | User for the HTTP Basic authentication at the Prometheus remote write endpoint | |
+| K6_PROMETHEUS_RW_PASSWORD |  Password for the HTTP Basic authentication at the Prometheus remote write endpoint| |
+| K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM | If true, it maps the all defined trend metrics as Native Histograms | false |
+| K6_PROMETHEUS_RW_TREND_STATS | It's a comma-separated list of stats functions | min,p(90),p(95),p(99),max |
+| K6_PROMETHEUS_RW_INSECURE_SKIP_TLS_VERIFY | If true, the HTTP client skips TLS verification on the endpoint | false |
 
 
 The following table includes the targets.
