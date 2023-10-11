@@ -63,7 +63,12 @@ export function teardown({ refs }) {
 
     for (const ref of refs) {
         const r = /([^/]+)\/([^:]+):(.*)/.exec(ref)
-        harbor.deleteArtifact(r[1], r[2], r[3])
+        
+        try {
+            harbor.deleteArtifact(r[1], r[2], r[3])
+        } catch (e) {
+            console.error(e.message)
+        }
     }
 }
 
