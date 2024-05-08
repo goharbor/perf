@@ -15,6 +15,8 @@ export function Settings() {
   settings['ProjectPrefix'] = getEnv('PROJECT_PREFIX', 'project')
   settings['UserPrefix'] = getEnv('USER_PREFIX', 'user')
   settings['ScannerURL'] = getEnv('SCANNER_URL', '')
+  settings['AutoSbomGen'] = getEnv("AUTO_SBOM_GENERATION", "false")
+  settings['FakeScannerURL'] = getEnv('FAKE_SCANNER_URL', '')
 
   return settings
 }
