@@ -31,6 +31,9 @@ const harbor = new Harbor(settings.Harbor);
 export function setup() {
     try {
         harbor.deleteProject('library')
+        if (settings['FakeScannerURL'] !== '') {
+            harbor.setScannerAsDefault(harbor.createScanner({ name: `fake-scanner-${Date.now()}`, url: settings.FakeScannerURL }))
+        }
     } catch (e) {
         console.error(e.message)
     }
@@ -40,7 +43,14 @@ export default function () {
     const suffix = numberToPadString(counter.up(), settings.ProjectsCount)
 
     try {
-        harbor.createProject({ projectName: `${settings.ProjectPrefix}-${suffix}` })
+        if (settings['AutoSbomGen'] === "true") {
+            const metadataValue = {
+                autoSbomGeneration: settings['AutoSbomGen']
+            }
+            harbor.createProject({ projectName: `${settings.ProjectPrefix}-${suffix}`, metadata: metadataValue })
+        } else {
+            harbor.createProject({ projectName: `${settings.ProjectPrefix}-${suffix}` })
+        }
         successRate.add(true)
     } catch (e) {
         successRate.add(false)
